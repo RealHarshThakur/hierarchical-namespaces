@@ -109,6 +109,14 @@ build: generate fmt vet manifests
 	     -o bin/kubectl/kubectl-hns_darwin_amd64 \
 	     -ldflags="-X sigs.k8s.io/hierarchical-namespaces/internal/version.Version=${HNC_IMG_TAG}" \
 	     ./cmd/kubectl/main.go
+	GOOS=linux GOARCH=arm64 go build \
+	     -o bin/kubectl/kubectl-hns_linux_arm64 \
+	     -ldflags="-X sigs.k8s.io/hierarchical-namespaces/internal/version.Version=${HNC_IMG_TAG}" \
+	     ./cmd/kubectl/main.go
+	GOOS=linux GOARCH=arm go build \
+	     -o bin/kubectl/kubectl-hns_linux_arm \
+	     -ldflags="-X sigs.k8s.io/hierarchical-namespaces/internal/version.Version=${HNC_IMG_TAG}" \
+	     ./cmd/kubectl/main.go
 
 # Clean all binaries (manager and kubectl)
 clean: krew-uninstall
@@ -230,7 +238,19 @@ endif
 # Build the docker image
 docker-build: generate fmt vet
 	@echo "Warning: this does not run tests. Run 'make test' to ensure tests are passing."
-	docker build . -t ${HNC_IMG}
+	bash ./hack/buildx.sh
+	docker buildx build \
+	--push \
+	--platform linux/arm64,linux/amd64,linux/arm/v7  --tag ${HNC_IMG} .
+
+
+# Build and push multi-arch image
+multiarch: generate fmt vet
+	@echo "Warning: this does not run tests. Run 'make test' to ensure tests are passing."
+	bash ./hack/buildx.sh
+	docker buildx build \
+	--push \
+	--platform linux/arm64,linux/amd64,linux/arm/v7  --tag ${HNC_IMG} .
 
 ###################### KIND ACTIONS #########################
 
