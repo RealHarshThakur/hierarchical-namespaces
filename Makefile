@@ -238,10 +238,7 @@ endif
 # Build the docker image
 docker-build: generate fmt vet
 	@echo "Warning: this does not run tests. Run 'make test' to ensure tests are passing."
-	bash ./hack/buildx.sh
-	docker buildx build \
-	--push \
-	--platform linux/arm64,linux/amd64,linux/arm/v7  --tag ${HNC_IMG} .
+	docker build . -t ${HNC_IMG}
 
 
 # Build and push multi-arch image
