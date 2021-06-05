@@ -1,11 +1,12 @@
 name: release
 
-on:
+on: 
+  create:
   push:
     branches:
       - master
-    tags:
-      - v*
+      - 'v*'
+ 
 
 jobs:
   hnc-manager:
@@ -24,13 +25,12 @@ jobs:
         run: |
           echo "::set-output name=DATE::$(date -u +'%Y-%m-%dT%H:%M:%S%Z')"
 
-    # Setup gcloud CLI
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
         with:
-          version: '270.0.0'
-          service_account_key: ${{ secrets.GCR_KEY }} 
-
-
+          service_account_key: ${{ secrets.GCR_KEY }}
+          export_default_credentials: true
+        
       # Configure docker to use the gcloud command-line tool as a credential helper
       - run: |
           # Set up docker to authenticate
@@ -39,20 +39,19 @@ jobs:
 
       - name: Docker meta
         id: docker_meta
-        uses: crazy-max/ghaction-docker-meta@v1
+        uses: docker/metadata-action@v3
         with:
-          # add each registry to which the image needs to be pushed here
-          images: |
-            gcr.io/k8s-staging-multitenancy/hnc-manager
-          tag-latest: true
-          tag-semver: |
-            {{version}}
-
+          images: gcr.io/singular-array-306807/hnc-manager
+          tags: |
+            type=raw,value=multiarch-{{branch}}
+  
       - name: Print Tags
         run: |
           echo "${{ steps.docker_meta.outputs.tags }}"
           echo "RELEASE TAG: ${RELEASE_TAG}"
 
+    ## QEMU is an emulator which makes it possible to transalte instruction sets to different platforms.
+    ## In this step, we setup the driver which Docker can use to build images on different platforms
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
         with:

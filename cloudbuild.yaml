@@ -88,3 +88,8 @@ steps:
   - '$_HNC_USER:$_HNC_PERSONAL_ACCESS_TOKEN'
   - 'https://uploads.github.com/repos/$_HNC_REPO_OWNER/hierarchical-namespaces/releases/$_HNC_RELEASE_ID/assets?name=krew-kubectl-hns.yaml'
 
+# Build Docker image
+- name: gcr.io/cloud-builders/docker
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/$_HNC_IMG_NAME:$_HNC_IMG_TAG', 'hierarchical-namespaces']
+
+images: ['gcr.io/$PROJECT_ID/$_HNC_IMG_NAME:$_HNC_IMG_TAG']
